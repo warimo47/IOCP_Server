@@ -122,6 +122,7 @@
     <ClInclude Include="EXOVER.h" />
     <ClInclude Include="MyClient.h" />
     <ClInclude Include="MyTime.h" />
+    <ClInclude Include="protocol.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
