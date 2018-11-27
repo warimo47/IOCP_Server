@@ -56,6 +56,10 @@ int SceneManager::GetWinWidth() { return m_nWin_Width; }
 
 int SceneManager::GetWinHeight() { return m_nWin_Height; }
 
+TCHAR* SceneManager::GetMyCharStr() { return m_myChatStr; }
+
+bool SceneManager::CanChat() { return m_bInputChat; }
+
 void SceneManager::LoginOkey(sc_login_ok* pBuf)
 {
 	m_Myid = pBuf->id;
@@ -71,12 +75,70 @@ void SceneManager::Chat(sc_chat* pBuf)
 
 }
 
-void SceneManager::ProcessKeyDown(wchar_t tChar)
+void SceneManager::ProcessKeyDown(WPARAM wParam)
 {
-	
+	// 채팅 중 일때
+	if (m_bInputChat)
+	{
+		TCHAR character;
+		bool canInputChar = false;
+
+		switch (wParam)
+		{
+		case VK_RETURN:
+			PressEnter();
+			break;
+		case VK_BACK:
+			PressBackspace();
+			break;
+		default:
+			InputChar(static_cast<TCHAR>(wParam));
+			break;
+		}
+
+		if (lstrlen(m_myChatStr) == MAX_STR_SIZE - 1)
+		{
+			// SendChatPacket();
+		}
+	}
+	// 채팅 중이 아닐때
+	else
+	{
+		bool canSendPacket = true;
+		unsigned char sendPacketType;
+
+		switch (wParam)
+		{
+		case VK_RETURN:
+			m_bInputChat = true;
+			canSendPacket = false;
+			break;
+		}
+	}
+}
+
+void SceneManager::ProcessKeyUp(WPARAM wParam)
+{
+
 }
 
 void SceneManager::PressBackspace()
 {
 	
+}
+
+void SceneManager::PressEnter()
+{
+	if (lstrlen(m_myChatStr) == 0)
+	{
+		m_bInputChat = false;
+		return;
+	}
+
+	// SendChatPacket();
+}
+
+void SceneManager::InputChar(TCHAR tchar)
+{
+	// m_myCharStr
 }

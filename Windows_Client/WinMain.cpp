@@ -1,4 +1,4 @@
-#pragma comment(linker,"/entry:WinMainCRTStartup /subsystem:console")
+// #pragma comment(linker,"/entry:WinMainCRTStartup /subsystem:console")
 #pragma comment(lib,"ws2_32.lib")
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
@@ -39,10 +39,6 @@ int saved_packet_size;
 // 내 클라이언트 정보
 int g_myid;
 
-// 영어/한글 키보드 입력 상태
-bool englishKoreanState = true;
-bool englishLittleBig = true;
-
 int Game_Init()
 {
 	// 한글 사용
@@ -64,10 +60,6 @@ int Game_Init()
 	sAddr.sin_port = htons(MY_SERVER_PORT);
 	sAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-	std::cout << "아이디를 입력하세요 : ";
-
-	std::wcin >> g_cSceneManager->m_id_str;
-
 	WSAConnect(g_sock, (SOCKADDR*)&sAddr, sizeof(sAddr), NULL, NULL, NULL, NULL);
 
 	// WSAAsyncSelect()
@@ -84,7 +76,6 @@ int Game_Init()
 	cs_login *my_packet = reinterpret_cast<cs_login *>(send_buffer);
 	my_packet->size = sizeof(cs_login);
 	my_packet->type = CS_LOGIN;
-	wcscpy_s(my_packet->id_str, g_cSceneManager->m_id_str);
 	send_wsabuf.len = sizeof(cs_login);
 	DWORD iobyte;
 
@@ -110,7 +101,7 @@ void SendChatPacket()
 	cs_chat my_packet;
 	my_packet.size = sizeof(cs_chat);
 	my_packet.type = CS_CHAT;
-	wcscpy_s(my_packet.chat_str, g_cSceneManager->m_myChatStr);
+	wcscpy_s(my_packet.chat_str, g_cSceneManager->GetMyCharStr());
 	memcpy_s(send_wsabuf.buf, sizeof(cs_chat), &my_packet, sizeof(cs_chat));
 	send_wsabuf.len = sizeof(cs_chat);
 
@@ -123,117 +114,17 @@ void SendChatPacket()
 		printf("Error while sending packet [%d]", error_code);
 	}
 
-	g_cSceneManager->m_bInputChat = !(g_cSceneManager->m_bInputChat);
-	ZeroMemory(g_cSceneManager->m_myChatStr, lstrlen(g_cSceneManager->m_myChatStr));
+	ZeroMemory(g_cSceneManager->GetMyCharStr(), lstrlen(g_cSceneManager->GetMyCharStr()));
 }
 
 void ProcessKeyDown(WPARAM wParam)
 {
-	// 채팅 중 일때
-	if (g_cSceneManager->m_bInputChat)
-	{
-		wchar_t character;
-		bool canInputChar = false;
-
-		switch (wParam)
-		{
-		case VK_RETURN:
-		{
-			if (lstrlen(g_cSceneManager->m_myChatStr) == 0)
-			{
-				g_cSceneManager->m_bInputChat = !(g_cSceneManager->m_bInputChat);
-				return;
-			}
-
-			SendChatPacket();
-		}
-		break;
-		case VK_BACK:
-			g_cSceneManager->PressBackspace();
-			break;
-		case VK_CAPITAL:
-			englishLittleBig = !englishLittleBig;
-			break;
-		case VK_SHIFT:
-			englishLittleBig = !englishLittleBig;
-			break;
-		case 'A': character = L'A'; canInputChar = true; break;
-		case 'B': character = L'B'; canInputChar = true; break;
-		case 'C': character = L'C'; canInputChar = true; break;
-		case 'D': character = L'D'; canInputChar = true; break;
-		case 'E': character = L'E'; canInputChar = true; break;
-		case 'F': character = L'F'; canInputChar = true; break;
-		case 'G': character = L'G'; canInputChar = true; break;
-		case 'H': character = L'H'; canInputChar = true; break;
-		case 'I': character = L'I'; canInputChar = true; break;
-		case 'J': character = L'J'; canInputChar = true; break;
-		case 'K': character = L'K'; canInputChar = true; break;
-		case 'L': character = L'L'; canInputChar = true; break;
-		case 'M': character = L'M'; canInputChar = true; break;
-		case 'N': character = L'N'; canInputChar = true; break;
-		case 'O': character = L'O'; canInputChar = true; break;
-		case 'P': character = L'P'; canInputChar = true; break;
-		case 'Q': character = L'Q'; canInputChar = true; break;
-		case 'R': character = L'R'; canInputChar = true; break;
-		case 'S': character = L'S'; canInputChar = true; break;
-		case 'T': character = L'T'; canInputChar = true; break;
-		case 'U': character = L'U'; canInputChar = true; break;
-		case 'V': character = L'V'; canInputChar = true; break;
-		case 'W': character = L'W'; canInputChar = true; break;
-		case 'X': character = L'X'; canInputChar = true; break;
-		case 'Y': character = L'Y'; canInputChar = true; break;
-		case 'Z': character = L'Z'; canInputChar = true; break;
-		case VK_NUMPAD0: case '0': character = L'0'; canInputChar = true; break;
-		case VK_NUMPAD1: case '1': character = L'1'; canInputChar = true; break;
-		case VK_NUMPAD2: case '2': character = L'2'; canInputChar = true; break;
-		case VK_NUMPAD3: case '3': character = L'3'; canInputChar = true; break;
-		case VK_NUMPAD4: case '4': character = L'4'; canInputChar = true; break;
-		case VK_NUMPAD5: case '5': character = L'5'; canInputChar = true; break;
-		case VK_NUMPAD6: case '6': character = L'6'; canInputChar = true; break;
-		case VK_NUMPAD7: case '7': character = L'7'; canInputChar = true; break;
-		case VK_NUMPAD8: case '8': character = L'8'; canInputChar = true; break;
-		case VK_NUMPAD9: case '9': character = L'9'; canInputChar = true; break;
-		default:
-			break;
-		}
-
-		if (canInputChar)
-		{
-			if (englishLittleBig && (L'A' <= character && character <= L'Z')) character += 32;
-			g_cSceneManager->ProcessKeyDown(character);
-		}
-
-		if (lstrlen(g_cSceneManager->m_myChatStr) == MAX_STR_SIZE - 1)
-		{
-			SendChatPacket();
-		}
-
-	}
-	// 채팅 중이 아닐때
-	else
-	{
-		int dir = -1;
-		bool canSendPacket = true;
-		unsigned char sendPacketType;
-
-		switch (wParam)
-		{
-		case VK_RETURN:
-			g_cSceneManager->m_bInputChat = !(g_cSceneManager->m_bInputChat);
-			canSendPacket = false;
-			break;
-		}
-	}
+	g_cSceneManager->ProcessKeyDown(wParam);
 }
 
 void ProcessKeyUp(WPARAM wParam)
 {
-	switch (wParam)
-	{
-	case VK_SHIFT:
-		englishLittleBig = !englishLittleBig;
-		break;
-	}
+	g_cSceneManager->ProcessKeyUp(wParam);
 }
 
 void ProcessPacket(char* pBuf)

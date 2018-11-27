@@ -12,6 +12,7 @@ struct Client
 
 class SceneManager
 {
+private:
 	// 배경 타일
 	CImage m_iTile;
 
@@ -38,15 +39,12 @@ class SceneManager
 	// 맵 정보
 	short m_map[300][300];
 
-public:
 	// 채팅 입력 상태
 	bool m_bInputChat;
 
-	// 내 ID 문자열
-	wchar_t m_id_str[ID_STR_LENGTH];
-
 	// 내 챗팅 저장 할 문자열
-	wchar_t m_myChatStr[MAX_STR_SIZE];
+	TCHAR m_myChatStr[MAX_STR_SIZE];
+	int m_len;
 
 public:
 	SceneManager();
@@ -58,12 +56,19 @@ public:
 
 	int GetWinWidth();
 	int GetWinHeight();
+	TCHAR* GetMyCharStr();
+
+	bool CanChat();
 
 	void LoginOkey(sc_login_ok*);
 	void LoginFail(sc_login_fail*);
 
 	void Chat(sc_chat*);
 
-	void ProcessKeyDown(wchar_t tChar);
+	void ProcessKeyDown(WPARAM);
+	void ProcessKeyUp(WPARAM);
 	void PressBackspace();
+	void PressEnter();
+
+	void InputChar(TCHAR);
 };

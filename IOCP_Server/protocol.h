@@ -1,7 +1,7 @@
 #pragma once
 
 #define MAX_BUFF_SIZE 4000
-#define MAX_PACKET_SIZE 255
+#define MAX_PACKET_SIZE 256
 
 #define MY_SERVER_PORT 4000
 
@@ -19,11 +19,12 @@
 
 #pragma pack (push, 1)
 
+/* Client -> Server */
+
 struct cs_login
 {
 	unsigned char size;
 	unsigned char type;
-	wchar_t id_str[ID_STR_LENGTH];
 };
 
 struct cs_logout
@@ -38,6 +39,8 @@ struct cs_chat
 	unsigned char type;
 	wchar_t chat_str[MAX_STR_SIZE];
 };
+
+/* Server -> Client */
 
 struct sc_login_ok
 {
